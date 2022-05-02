@@ -95,7 +95,7 @@ The following face pair presents the images of two different persons, and gets t
 
 ### Discussion
 
-Even though the distinction between the score is not very clear, we can see visually that the improved model returns more similar images than the baseline does.
+Even though the distinction between the score is not very clear, we can see visually that the improved model returns more similar images than the baseline does.We built FaceNet model through deepface framework, Deepface’s face identifying accuracy is much better than the baseline system.
 
 
 ## Conclusion
