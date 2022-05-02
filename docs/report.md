@@ -2,7 +2,7 @@
 
 ## Abstract
 
-In this project, we implemented a reverse image search engine, which applies DeepFace. During the experiment, we verified our model on the LFW database.
+In this project, we implemented a reverse image search engine, which applies DeepFace and Elasticsearch. Our model returns them from high to low. During the experiment, we verified our model on the LFW database, and scored related images accoring to the similarity.
 
 
 ## Introduction
@@ -35,20 +35,26 @@ Nowadays, we have had a lot of applications in reverse image search. Google's Se
 
 ## Data
 
-We use the LFW (Labeled Faces in the Wild) as our dataset. It's an image database which collects face images for verification.
+We use the LFW (Labeled Faces in the Wild) as our dataset. It's an image database which collects face images for verification. We loaded more than 13200 images from LFW.
+
+In the baseline model, we resize the images to the required input shape and preprocess the images through VGG-16 model, so that it can be fed into the neural network.
+
+In the improved model, we call the preprocess API provided by DeepFace to fit the image shape to expected shape and normalize the image pixels.
 
 
 ## Methods
 
 ### Design
 
-In the baseline model, we leverage the `VGG-16` CNN to do the image embedding and `KNN` to finish the search part.
+In the baseline model, we leverage the VGG-16 CNN to do the image embedding and KNN to finish the search part.
 
 We leverage `DeepFace` and `Elasticsearch` in our model.
 
 `DeepFace` is a facial recognition library for Python. It wraps many cutting-edge face recognition models passed the human-level accuracy, including ArcFace, Boosting, DeepID, DlibResNet, DlibWrapper, Facenet, Facenet512, FbDeepFace, OpenFace, and VGGFace. We can get access to a set of features like face verification, face recognition, facial attribute anaylsis and real-time face analysis using the API of DeepFace. In our implemention, we use the `Facenet` from DeepFace base models.
 
 `Elasticsearch` is a distributed search engine based on the Lucene library. It's implemented with an HTTP web interface and schema-free JSON documents. So we generate our query through key-value format and pass the query to `elasticsearch` to search the similar face images.
+
+The new model improves the baseline model by replacing the embedding part and search part with more integrated interfaces. The KNN algorithm is a method to do classifaction and regression. However, the `elasticsearch` actually provides a search engine for the model to feed the input images. It avoids the defect of KNN classification, and makes better use of the image features extracted by the embedding process.
 
 
 ### Implemention
@@ -65,17 +71,34 @@ Read the image names and paths in our `lfw` file. To find the vector representat
 
 We search a target image the picture named `Alvaro_Noboa_0001.jpg` under `Alvaro_Noboa` directory and find its vector representation.
 
-Then, we create a query to search in the Elasticsearch index, and pass the query to the Elasticsearch index that we created before. Finally, we plot the result as following.
+Then, we create a query to search in the Elasticsearch index, and pass the query to the Elasticsearch index that we created before. Finally, we plot the result as follows.
 
-![pic01](./pic01.jpg)
+![pic01](./pic01.png)
 
 
 ## Experiments
 
-In the experiment part, we 
+### Results
+
+In this part, we conducted different experiments on the baseline model and the improved model.
+
+We calculated the accuracy on the baseline model. When k=1, we get the accuracy of 99.98%. However, when k=2, we have an accuracy of only 49.88%. The reason why the accuracy drops so sharply when k increases is that many people only have one picture in the training dataset. And we can see that the accuracy is 32.5% when k=3, and the accuracy decline becomes slower when k gets larger.
+
+We get the result of similarity scores in our improved model. For example, if the returned image is the same as the input, we get the score of 1. The second-ranked result is shown as follows. The persons in these two pictures are the same one and this pair has a similarity score of 0.09.
+
+![pic02](./pic02.png)
+
+The following face pair presents the images of two different persons, and gets the similarity score of 0.08. This score can be affected by different expressions of the same person or similar features extracted from images of different persons.
+
+![pic03](./pic03.png)
+
+
+### Discussion
+
+Even though the distinction between the score is not very clear, we can see visually that the improved model returns more similar images than the baseline does.
 
 
 ## Conclusion
 
-In this project, we finish reverse image search using the model of `DeepFace` and `Elasticsearch`. We imporve the baseline model by applying a more effective face embedding model and search engine. The experiment is conducted on the LFW database, and the result score is higher than the baseline.
+In this project, we finish reverse image search using the model of `DeepFace` and `Elasticsearch`. We imporve the baseline model by applying a more effective face embedding model and search engine. The experiment is conducted on the LFW database, and the result score is better than the baseline.
 
